@@ -3,3 +3,8 @@
 
 #Python files
 *.pyc
+
+#Files I am working with only localy
+public_indicators.py 
+#got those indicators online, but they are written with loops, depending on default index.
+#I will use this code to rewrite some of the indicators in a proper pandas/numpy was (multiplication of vectors/matrix 
