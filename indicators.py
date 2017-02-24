@@ -35,12 +35,26 @@ def BBANDS(df, period, std_off):
 	boil_mean = df['close'].rolling(period).mean().to_frame(name='boil_mean_{}_{}'.format(period, std_off))
 	boil_std = df['close'].rolling(period).std().to_frame(name='boil_std_{}_{}'.format(period, std_off))
 
-	boil_up = (boil_mean['boil_mean'] + std*boil_std['boil_std']).to_frame(name='boil_up_{}_{}'.format(period, std_off))
-	boil_down = (boil_mean['boil_mean'] - std*boil_std['boil_std']).to_frame(name='boil_down_{}_{}'.format(period, std_off))
+	boil_up = (boil_mean['boil_mean_{}_{}'.format(period, std_off)] + std_off*boil_std['boil_std_{}_{}'.format(period, std_off)]).to_frame(name='boil_up_{}_{}'.format(period, std_off))
+	boil_down = (boil_mean['boil_mean_{}_{}'.format(period, std_off)] - std_off*boil_std['boil_std_{}_{}'.format(period, std_off)]).to_frame(name='boil_down_{}_{}'.format(period, std_off))
 
 	df = df.join(boil_mean)
 	df = df.join(boil_up)
 	df = df.join(boil_down)
+
+	return df
+
+def normalizedBBands(df, period, std_off):
+	boil_mean = df['close'].rolling(period).mean().values
+	boil_std = df['close'].rolling(period).std().values
+
+	boil_up = boil_mean + std_off*boil_std
+	boil_down = boil_mean - std_off*boil_std
+
+	df['normBB'] = 0
+
+	df['normBB'] = (df[df['close'].values > boil_up]['close'] / boil_up[df['close'].values > boil_up]).to_frame(name='normBB')
+	df['normBB'] = (df[df['close'].values < boil_down]['close'] / boil_down[df['close'].values < boil_down]).to_frame(name='normBB')
 
 	return df
 
@@ -53,7 +67,7 @@ def RSI(df, period):
 
 def STOCHASTICS(df, period, smooth):
 	stoch_k = (100.0 * (df['close'] - df['low'].rolling(period).min()) / (df['high'].rolling(period).max() - df['low'].rolling(period).min())).to_frame(name='stoch_k_{}'.format(period))
-	stoch_d = stoch_k['stoch_k'].rolling(smooth).mean().to_frame(name='stoch_d_{}_{}'.format(period, smooth))
+	stoch_d = stoch_k['stoch_k_{}'.format(period)].rolling(smooth).mean().to_frame(name='stoch_d_{}_{}'.format(period, smooth))
 
 	df = df.join(stoch_k)
 	df = df.join(stoch_d)
@@ -92,12 +106,6 @@ def ADX(df, period):
 	DX = (100 * (pDI - mDI).abs() / (pDI + mDI))
 
 	ADX = pd.DataFrame(wilder_smooth(DX, period), index=df.index, columns=['adx_{}'.format(period)])
-
-	pDI = pDI.to_frame(name='pDI')
-	mDI = mDI.to_frame(name='mDI')
-
-	df = df.join(pDI)
-	df = df.join(mDI)
 
 	return df.join(ADX)
 

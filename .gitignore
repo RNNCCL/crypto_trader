@@ -1,8 +1,12 @@
 #Sublime project/template files
 *.sublime-*
 
-#Python files
+#Python files and other files
 *.pyc
+*.txt
+
+#jupyter folder
+.ipynb_checkpoints
 
 #Files I am working with only localy
 public_indicators.py 
