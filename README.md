@@ -14,14 +14,11 @@ to get json data points from poloniex and save them in a file (modify get_data.p
 You can also import other json datapoints which have the following form:
 
 ```
-[
-{
-open: 1.000
-close: 1.000
-high: 1.000
-low: 1.000
-volume: 1.000
-}
+[{open: 1.000,
+  close: 1.000,
+  high: 1.000,
+  low: 1.000,
+  volume: 1.000}
 ...
 ]
 ```
