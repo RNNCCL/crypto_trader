@@ -4,6 +4,7 @@
 #Python files and other files
 *.pyc
 *.txt
+*.json
 
 #jupyter folder
 .ipynb_checkpoints
