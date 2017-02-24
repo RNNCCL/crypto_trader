@@ -1,8 +1,8 @@
-Crypto trader is a price predictor project for Bitcoins
+#Crypto trader is a price predictor project for Bitcoins
 
-Usage:
+##Usage:
 
-Data points:
+###Data points:
 
 Run 
 ```
@@ -23,11 +23,11 @@ You can also import other json datapoints which have the following form:
 ]
 ```
 
-Add custom inidcators:
+###Add custom inidcators:
 
 You can add custom indicators in indicators.py. Follow the function_name(df, *args) -> return df with one new column that represents the indicator.
 Don't forget to add function to indicator list
 
-Run statistics:
+###Run statistics:
 
 Open learn_bitcoin notebook and run cells.
