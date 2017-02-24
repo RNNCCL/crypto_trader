@@ -11,27 +11,27 @@ def wilder_smooth(value_list, period):
 	return np.array(smoothened)
 
 
-def MA(df, period):
-	mean = df['close'].rolling(period).mean().to_frame(name='mean_{}'.format(period))
-	return df.join(mean)
+def ma_rel_diff(df, period=50):
+	df['ma_rel_diff_{}'.format(period)] = 1 - df['close'].rolling(period).mean().values / df['close']
+	return df
 
 
-def EMA(df, period):
-	mean = df['close'].ewm(span=period, min_periods=period-1).mean().to_frame(name='ema_{}'.format(period))
-	return df.join(mean)
+def ema_rel_diff(df, period=10):
+	df['ema_rel_diff_{}'.format(period)] = 1 - df['close'].ewm(span=period, min_periods=period-1).mean().values / df['close']
+	return df
 
 
-def MOM(df, period):
-	momentum = (df['close'].diff(period)).to_frame(name='moment_{}'.format(period))
-	return df.join(momentum)
+def mom(df, period=20):
+	df['moment_{}'.format(period)] = df['close'].diff(period).values
+	return df
 
 
-def ROC(df, period):
-	roc = (df['close'] / df['close'].shift(period)).to_frame(name='roc_{}'.format(period))
-	return df.join(roc)
+def roc(df, period=14):
+	df['roc_{}'.format(period)] = df['close'] / df['close'].shift(period).values
+	return df
 
 
-def BBANDS(df, period, std_off):
+def bbands(df, period=20, std_off=2):
 	boil_mean = df['close'].rolling(period).mean().to_frame(name='boil_mean_{}_{}'.format(period, std_off))
 	boil_std = df['close'].rolling(period).std().to_frame(name='boil_std_{}_{}'.format(period, std_off))
 
@@ -44,53 +44,52 @@ def BBANDS(df, period, std_off):
 
 	return df
 
-def normalizedBBands(df, period, std_off):
-	boil_mean = df['close'].rolling(period).mean().values
-	boil_std = df['close'].rolling(period).std().values
+def normalized_bbands(df, period=20, std_off=20):
+	boil_mean = df['close'].rolling(period).mean()
+	boil_std = df['close'].rolling(period).std()
 
-	boil_up = boil_mean + std_off*boil_std
-	boil_down = boil_mean - std_off*boil_std
+	boil_up = df['close'].values / (boil_mean + std_off*boil_std) - 1
+	boil_down = df['close'].values / (boil_mean - std_off*boil_std) - 1
 
-	df['normBB'] = 0
+	boil_up = boil_up * boil_up.gt(0)
+	boil_down = boil_down * boil_down.lt(0)
 
-	df['normBB'] = (df[df['close'].values > boil_up]['close'] / boil_up[df['close'].values > boil_up]).to_frame(name='normBB')
-	df['normBB'] = (df[df['close'].values < boil_down]['close'] / boil_down[df['close'].values < boil_down]).to_frame(name='normBB')
+	df['normBB'] = boil_up.values + boil_down.values
 
 	return df
 
 
-def RSI(df, period):
-	rsi = (100.0 - 100.0 / (1.0 + df['close'].diff(1).gt(0).rolling(period).mean() / df['close'].diff(1).lt(0).rolling(period).mean())).to_frame(name='rsi_{}'.format(period))
+def rsi(df, period=14):
+	df['rsi_{}'.format(period)] = 100.0 - 100.0 / (1.0 + df['close'].diff(1).gt(0).rolling(period).mean().values / df['close'].diff(1).lt(0).rolling(period).mean().values)
+	return df
 
-	return df.join(rsi)
 
-
-def STOCHASTICS(df, period, smooth):
+def stochastics(df, period=14, smooth=3):
 	stoch_k = (100.0 * (df['close'] - df['low'].rolling(period).min()) / (df['high'].rolling(period).max() - df['low'].rolling(period).min())).to_frame(name='stoch_k_{}'.format(period))
 	stoch_d = stoch_k['stoch_k_{}'.format(period)].rolling(smooth).mean().to_frame(name='stoch_d_{}_{}'.format(period, smooth))
 
-	df = df.join(stoch_k)
+	# df = df.join(stoch_k)
 	df = df.join(stoch_d)
 
 	return df
 
 
-def MACD(df, period_fast, period_slow, smooth):
+def macd(df, period_fast=12, period_slow=26, smooth=9):
 	macd = df['close'].ewm(span=period_fast, min_periods=period_fast-1).mean() - df['close'].ewm(span=period_slow, min_periods=period_slow-1).mean()
-	macd_smoothed = macd_diff.ewm(smooth).mean()
+	macd_smoothed = macd.ewm(span=smooth, min_periods=smooth-1).mean().values
 
-	macd_hist = (macd - macd_smoothed).to_frame(name='macd_{}_{}_{}'.format(period_fast, period_slow, smooth))
+	df['macd_{}_{}_{}'.format(period_fast, period_slow, smooth)] = macd - macd_smoothed
 
-	return df.join(macd_hist)
+	return df
 
 
-def ATR(df, period):
+def atr(df, period=14):
 	TR = pd.concat([df['high'], df['close'].shift(1)], 1).max(1) - pd.concat([df['low'], df['close'].shift(1)], 1).min(1)
 	ATR = TR.rolling(period).mean().to_frame(name='atr_{}'.format(period))
 	return df.join(ATR)
 
 
-def ADX(df, period):
+def adx(df, period=14):
 	TR = pd.concat([df['high'], df['close'].shift(1)], 1).max(1) - pd.concat([df['low'], df['close'].shift(1)], 1).min(1)
 	df['ATR'] = wilder_smooth(TR, period)
 	# ATR = TR.rolling(period).mean()
