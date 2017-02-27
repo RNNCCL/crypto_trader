@@ -108,3 +108,16 @@ def adx(df, period=14):
 
 	return df.join(ADX)
 
+indicators_map = {
+	'ma_rel_diff': ma_rel_diff,
+	'ema_rel_diff': ema_rel_diff,
+	'mom': mom,
+	'roc': roc,
+	'bbands': bbands,
+	'normalized_bbands': normalized_bbands,
+	'rsi': rsi,
+	'stoch': stochastics,
+	'macd': macd,
+	'atr': atr,
+	'adx': adx,
+}
